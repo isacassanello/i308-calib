@@ -96,3 +96,32 @@ class CheckerboardDetector:
                 self._busy = False
                 if detection is not None:
                     self._result = detection
+
+
+class StereoCheckerboardDetector:
+    """
+    Wraps two CheckerboardDetector instances (left/right) so the
+    stereo script can start / stop / submit / read results with a
+    single object.
+    """
+
+    def __init__(self, args):
+        self._left = CheckerboardDetector(args)
+        self._right = CheckerboardDetector(args)
+
+    def start(self):
+        self._left.start()
+        self._right.start()
+
+    def stop(self):
+        self._left.stop()
+        self._right.stop()
+
+    def submit(self, left_frame, right_frame):
+        """Non-blocking.  Stores the latest left/right frames to be detected."""
+        self._left.submit(left_frame)
+        self._right.submit(right_frame)
+
+    def get_results(self):
+        """Non-blocking.  Returns (left_detection, right_detection)."""
+        return self._left.get_result(), self._right.get_result()

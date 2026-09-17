@@ -10,7 +10,7 @@ import numpy as np
 from i308_calib.calib import calib_utils
 
 from i308_calib.calib.calib_utils import np_print, board_points, draw_checkerboard
-from i308_calib.calib.checkerboard_detector import CheckerboardDetector
+from i308_calib.calib.checkerboard_detector import StereoCheckerboardDetector
 from i308_calib.calib.dataset import StereoDataset
 from i308_calib.calib.tool_base import add_common_args, parse_checkerboard, detect_checkerboard
 
@@ -362,8 +362,7 @@ def start(args):
     detection_left = None
     detection_right = None
 
-    detector_left = CheckerboardDetector(args)
-    detector_right = CheckerboardDetector(args)
+    detector = StereoCheckerboardDetector(args)
 
     dataset = StereoDataset()
 
@@ -442,11 +441,9 @@ def start(args):
             if detection_enabled:
 
                 # detects board in background threads (non-blocking)
-                detector_left.submit(left_frame)
-                detector_right.submit(right_frame)
+                detector.submit(left_frame, right_frame)
 
-                detection_left = detector_left.get_result()
-                detection_right = detector_right.get_result()
+                detection_left, detection_right = detector.get_results()
 
                 if detection_left is not None:
                     found = detection_left['found']
@@ -478,7 +475,7 @@ def start(args):
             show_img = cv2.resize(show_img, (int(w / 2), int(h / 2)))
             cv2.imshow("stereo", show_img)
 
-            sleep = 10
+            sleep = 1
             k = cv2.waitKey(sleep)
 
             if k == ord('h'):
@@ -529,11 +526,9 @@ def start(args):
                 # toggles detection on / off
                 detection_enabled = not detection_enabled
                 if detection_enabled:
-                    detector_left.start()
-                    detector_right.start()
+                    detector.start()
                 else:
-                    detector_left.stop()
-                    detector_right.stop()
+                    detector.stop()
                     detection_left = None
                     detection_right = None
 
@@ -595,8 +590,7 @@ def start(args):
     finally:
 
         # stop background detection threads
-        detector_left.stop()
-        detector_right.stop()
+        detector.stop()
 
         # When everything done, release the capture
         cap.release()
