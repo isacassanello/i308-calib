@@ -161,6 +161,9 @@ def calibrate_stereo(
 
     to_print = [
 
+        "# Error:",
+        f"{err:.3f}\n",
+
         "# Left camera Intrinsics:",
         ("left_K", left_K),
         ("left_dist", left_dist),
@@ -182,14 +185,17 @@ def calibrate_stereo(
         ("F", F),
 
     ]
+    print("-"*80)
     print("# STEREO CALIBRATION")
     for line in to_print:
 
-        if isinstance(line, str):
-            print(line)
-        else:
+        if isinstance(line, tuple):
             var_name, np_array = line
             print(f"{var_name} = {np_print(np_array)}\n")
+        else:
+            print(line)
+    print("-"*80)
+
 
     calibration_results = {
         'left_K': left_K,
@@ -348,6 +354,9 @@ def start(args):
 
     checkerboard = args.checkerboard
     checkerboard_world_points = args.square_size * board_points(checkerboard)
+
+    print(f"using checkerboard: {checkerboard[0]}x{checkerboard[1]} (square size {args.square_size} mm)")
+
     detection_enabled = False
     detection_left = None
     detection_right = None
@@ -541,7 +550,6 @@ def start(args):
                     calib_left = None
                     calib_right = None
 
-                    print("STEREO CALIBRATION:")
                     calibration_results = calibrate_stereo(args, dataset, calib_left, calib_right)
 
             elif k == ord('m'):
