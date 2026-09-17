@@ -526,8 +526,10 @@ def start(args):
                 # toggles detection on / off
                 detection_enabled = not detection_enabled
                 if detection_enabled:
+                    print("checkerboard detection ENABLED")
                     detector.start()
                 else:
+                    print("checkerboard detection DISABLED")
                     detector.stop()
                     detection_left = None
                     detection_right = None
