@@ -10,6 +10,7 @@ import numpy as np
 from i308_calib.calib import calib_utils
 
 from i308_calib.calib.calib_utils import np_print, board_points, draw_checkerboard
+from i308_calib.calib.checkerboard_detector import CheckerboardDetector
 from i308_calib.calib.dataset import StereoDataset
 from i308_calib.calib.tool_base import add_common_args, parse_checkerboard, detect_checkerboard
 
@@ -361,6 +362,9 @@ def start(args):
     detection_left = None
     detection_right = None
 
+    detector_left = CheckerboardDetector(args)
+    detector_right = CheckerboardDetector(args)
+
     dataset = StereoDataset()
 
     draw_corners = True
@@ -437,27 +441,32 @@ def start(args):
 
             if detection_enabled:
 
-                # detects board
-                detection_left = detect_checkerboard(args, left_frame)
-                detection_right = detect_checkerboard(args, right_frame)
+                # detects board in background threads (non-blocking)
+                detector_left.submit(left_frame)
+                detector_right.submit(right_frame)
 
-                found = detection_left['found']
-                if found:
-                    show_img_left = calib_utils.draw_checkerboard(
-                        show_img_left,
-                        args.checkerboard,
-                        detection_left['corners'],
-                        found
-                    )
+                detection_left = detector_left.get_result()
+                detection_right = detector_right.get_result()
 
-                found = detection_right['found']
-                if found:
-                    show_img_right = calib_utils.draw_checkerboard(
-                        show_img_right,
-                        args.checkerboard,
-                        detection_right['corners'],
-                        found,
-                    )
+                if detection_left is not None:
+                    found = detection_left['found']
+                    if found:
+                        show_img_left = calib_utils.draw_checkerboard(
+                            show_img_left,
+                            args.checkerboard,
+                            detection_left['corners'],
+                            found
+                        )
+
+                if detection_right is not None:
+                    found = detection_right['found']
+                    if found:
+                        show_img_right = calib_utils.draw_checkerboard(
+                            show_img_right,
+                            args.checkerboard,
+                            detection_right['corners'],
+                            found,
+                        )
 
 
             # cv2.imshow('left', show_img_left)
@@ -519,7 +528,12 @@ def start(args):
 
                 # toggles detection on / off
                 detection_enabled = not detection_enabled
-                if not detection_enabled:
+                if detection_enabled:
+                    detector_left.start()
+                    detector_right.start()
+                else:
+                    detector_left.stop()
+                    detector_right.stop()
                     detection_left = None
                     detection_right = None
 
@@ -579,6 +593,10 @@ def start(args):
 
 
     finally:
+
+        # stop background detection threads
+        detector_left.stop()
+        detector_right.stop()
 
         # When everything done, release the capture
         cap.release()

@@ -8,6 +8,7 @@ import glob
 import numpy as np
 
 from i308_calib.calib import calib_utils
+from i308_calib.calib.checkerboard_detector import CheckerboardDetector
 from i308_calib.calib.dataset import Dataset
 from i308_calib.calib.tool_base import add_common_args, parse_checkerboard, detect_checkerboard
 
@@ -216,6 +217,8 @@ def start(args):
     detection_enabled = False
     detection = None
 
+    detector = CheckerboardDetector(args)
+
     calib_set = Dataset()
 
     draw_corners = True
@@ -244,17 +247,20 @@ def start(args):
 
         if detection_enabled:
 
-            # detects board
-            detection = detect_checkerboard(args, frame)
+            # detects board in background thread (non-blocking)
+            detector.submit(frame)
 
-            found = detection['found']
-            if found:
-                show_img = calib_utils.draw_checkerboard(
-                    show_img,
-                    args.checkerboard,
-                    detection['corners'],
-                    found,
-                )
+            detection = detector.get_result()
+
+            if detection is not None:
+                found = detection['found']
+                if found:
+                    show_img = calib_utils.draw_checkerboard(
+                        show_img,
+                        args.checkerboard,
+                        detection['corners'],
+                        found,
+                    )
 
         cv2.imshow('frame', show_img)
 
@@ -310,7 +316,10 @@ def start(args):
 
             # toggles detection on / off
             detection_enabled = not detection_enabled
-            if not detection_enabled:
+            if detection_enabled:
+                detector.start()
+            else:
+                detector.stop()
                 detection = None
 
         elif k == ord('a'):
@@ -339,6 +348,9 @@ def start(args):
             calib_set = load_calib_set(args)
 
 
+
+    # stop background detection thread
+    detector.stop()
 
     # When everything done, release the capture
     cap.release()
