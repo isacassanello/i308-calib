@@ -207,9 +207,7 @@ def start(args):
 
     # gets capture configuration
     cfg = get_capture_config(args)
-
-    if cfg.video >= 0:
-        cap = new_video_capture(cfg)
+    cap = new_video_capture(cfg)
 
     print("Checkerboard: ", args.checkerboard)
     print("Square Size: ", args.square_size)
@@ -225,12 +223,9 @@ def start(args):
 
     while True:
         
-        if cfg.video >= 0:
-            # Capture frame-by-frame
-            ret, frame = cap.read()
-        else:
-            ret = True
-            frame =  np.zeros((cfg.resolution[1], cfg.resolution[0], 3), np.uint8)
+
+        # Capture frame-by-frame
+        ret, frame = cap.read()
 
         # if frame is read correctly ret is True
         if not ret:
@@ -346,8 +341,7 @@ def start(args):
 
 
     # When everything done, release the capture
-    if cfg.video >= 0:
-        cap.release()
+    cap.release()
     cv2.destroyAllWindows()
 
 
