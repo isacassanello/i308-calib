@@ -32,6 +32,9 @@ def draw_checkerboard(
 
     # Ensure corners are in integer format for drawing
     corners = corners.astype(int)
+    if len(corners.shape) == 3:
+        # OpenCV 5.0 fix
+        corners = corners.reshape(-1, 2)
 
     # Draw lines connecting corners
     # line_color = color  # (0, 255, 0)
@@ -40,17 +43,17 @@ def draw_checkerboard(
         for j in range(board_size[0] - 1):
             idx1 = i * board_size[0] + j
             idx2 = i * board_size[0] + (j + 1)
-            cv2.line(image, tuple(corners[idx1][0]), tuple(corners[idx2][0]), line_color, line_thickness)
+            cv2.line(image, tuple(corners[idx1]), tuple(corners[idx2]), line_color, line_thickness)
 
     for i in range(board_size[1] - 1):
         for j in range(board_size[0]):
             idx1 = i * board_size[0] + j
             idx2 = (i + 1) * board_size[0] + j
-            cv2.line(image, tuple(corners[idx1][0]), tuple(corners[idx2][0]), line_color, line_thickness)
+            cv2.line(image, tuple(corners[idx1]), tuple(corners[idx2]), line_color, line_thickness)
 
-    # Draw circles at each corner
+        # Draw circles at each corner
     for corner in corners:
-        cv2.circle(image, tuple(corner[0]), corner_radius, circles_color, corner_thickness)
+        cv2.circle(image, tuple(corner), corner_radius, circles_color, corner_thickness)
 
     return image
 
@@ -69,12 +72,18 @@ def detect_board(
         w, h = gray.shape[1], gray.shape[0]
         use_image = cv2.resize(gray, (int(w * scale), int(h * scale)))
 
+    flags = (
+            cv2.CALIB_CB_ADAPTIVE_THRESH
+            | cv2.CALIB_CB_NORMALIZE_IMAGE
+            | cv2.CALIB_CB_FAST_CHECK
+    )
+
     # Find the chess board corners
     # If desired number of corners are found in the image then ret = true
     ret, corners = cv2.findChessboardCorners(
         use_image,
         CHECKERBOARD,
-        cv2.CALIB_CB_ADAPTIVE_THRESH + cv2.CALIB_CB_FAST_CHECK + cv2.CALIB_CB_NORMALIZE_IMAGE
+        flags=flags
     )
 
     if ret:
@@ -91,6 +100,10 @@ def detect_board(
         corners = cv2.cornerSubPix(gray, corners, subpix_win, (-1, -1), criteria)
         # pass
         # imgpoints.append(corners2)
+
+    if ret:
+        # on OpenCV < 5 shape is Nx1x2 --reshaping to--> Nx2
+        corners = corners.reshape(-1, 2)
 
     return ret, corners
 
