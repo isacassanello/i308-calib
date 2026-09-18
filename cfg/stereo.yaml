@@ -1,0 +1,23 @@
+video: 0
+name: Stereo ELP-USB3D1080P02
+# capture_mode: 'dshow'
+compression: 'MJPG'
+
+resolution: 3840x1080
+
+# resolutions:
+# single > stereo:
+#  1920x1080 > 3840x1080
+#  1280x720 > 2560x720
+#  800x600 > 1600x600
+#  640x480 > 1280x480
+#  320x240 > 640x240
+
+resolutions:
+  - 3840x1080
+  - 2560x720
+  - 1600x600
+  - 1280x480
+  - 640x240
+
+

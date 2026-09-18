@@ -1,0 +1,16 @@
+video: 1
+name: Facetime HD
+
+# mode can be 'auto', 'any' or 'dshow'
+capture_mode: 'auto'
+
+# requested resolution
+resolution: 1280x720
+
+# available resolution
+resolutions:
+- 640x480
+- 1280x720
+
+# threaded, if True the captures are made in a separate thread preventing gui from block
+# threaded: False

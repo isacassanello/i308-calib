@@ -1,0 +1,8 @@
+video: 0
+name: Logitech c920
+resolution: 1920x1080
+mode: 'auto'
+resolutions:
+  - 1920x1080
+  - 1280x720
+

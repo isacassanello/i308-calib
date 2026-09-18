@@ -1,0 +1,49 @@
+# This configuration file can be used with the Stereo ELP-USB3D1080P02 stereo camera.
+# As left camera cropping is applied, it can be used for mono camera calibration.
+# lite: use this file with a week computer resources. Eg. USB2.0
+
+# video device, on linux might be /dev/video<N>
+video: 0
+
+# name: str (optional)
+#   a name to identify the device
+name: Stereo ELP-USB3D1080P02
+
+# capture_mode: str (optional), default='auto', in ['auto', 'any', 'dshow']
+#   if auto, will try to use the best configuration mode
+capture_mode: 'auto'
+
+# resolution: str (optional)
+#   requested resolution in the format "<width>x<height>" in pixels
+# resolution: 3840x1080
+resolution: 1600x600
+# resolution: 1280x480
+
+# fps: int (optional)
+# requested frames per second
+fps: 15
+
+# resolutions: list of str, (optional)
+#   available resolutions for this camera
+# resolutions:
+#  - 640x480
+#  - 1280x720
+
+# crop: str (optional)
+#   requested crop in the format "<x_from>,<x_to>;<x_from>,<x_to>" in proportion
+# note: this crop configuration, will keep only the left camera image.
+crop: 0, 0.5; 0, 1
+
+# threaded: bool (optional) default=True,
+#   if True the captures are made in a separate thread preventing GUI from blocking
+threaded: True
+
+# compression: str (optional), default=None, in [
+#    'XVID', # "XviD MPEG-4",
+#    'MJPG', "Motion JPEG",
+#    'H264': "H.264 / AVC",
+#    'DIVX': "DivX MPEG-4",
+#    'MP4V': "MPEG-4 Video",
+#    'I420': "Uncompressed YUV format"
+# ]
+compression: 'MJPG'
